@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <ListPreference
+        android:defaultValue="@string/pref_popular_value"
+        android:entries="@array/pref_popularity_option_labels"
+        android:entryValues="@array/pref_popularity_option_values"
+        android:key="@string/pref_popular_key"
+        android:title="@string/pref_popularity_select_option_label" />
+</PreferenceScreen>
