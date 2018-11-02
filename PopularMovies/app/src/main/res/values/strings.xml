@@ -8,6 +8,7 @@
     <string name="trailer_3">Trailer 3</string>
 
     <string name="no_trailer_exist">No trailers exist!</string>
+    <string name="movie_reviews">Reviews</string>
 
     <string name="pref_popularity_select_option_label">Display Option</string>
     <string name="pref_option_summary">Click this section to list movies by popularity

@@ -107,16 +107,20 @@ public class DetailActivity extends AppCompatActivity
                 String reviews = "reviews";
 
                 try {
+                    // URLs for trailers and reviews
                     URL getVideoUrl = NetworkUtils.buildUrlWithMovieId(mMovieId, videos);
                     URL getReviewUrl = NetworkUtils.buildUrlWithMovieId(mMovieId, reviews);
 
                     // Log.d(TAG, "Video URL: " + getVideoUrl);
                     // Log.d(TAG, "Review URL: " + getReviewUrl);
 
+                    // Get json responses from the URLs
                     String getVideoJsonResults = NetworkUtils.getResponseFromHttpUrl(getVideoUrl);
                     String getReviewJsonResults = NetworkUtils.getResponseFromHttpUrl(getReviewUrl);
 
+                    // Store json results for videos
                     mVideoAndReviewHolder[0] = getVideoJsonResults;
+                    // Store json results for reviews
                     mVideoAndReviewHolder[1] = getReviewJsonResults;
 
                     return mVideoAndReviewHolder;
@@ -145,6 +149,8 @@ public class DetailActivity extends AppCompatActivity
                 boolean thirdKey = false;
 
                 final List<String> getYoutubeKey = ParseJsonDataUtils.getMovieTrailersFromJson(jsonResults[0]);
+
+                // Movie trailers can be displayed up to 3 trailers
                 for (int i = 0; i < getYoutubeKey.size(); i++) {
                     // Log.d(TAG, "Youtube Key " + i + ": " + getYoutubeKey.get(i));
                     if (i == 0) {
@@ -210,6 +216,7 @@ public class DetailActivity extends AppCompatActivity
                     });
                 }
 
+                // No movie trailer key exists
                 if (getYoutubeKey.size() == 0) {
                     mTrailer1 = findViewById(R.id.trailer1);
                     mTrailer1.setVisibility(View.VISIBLE);
