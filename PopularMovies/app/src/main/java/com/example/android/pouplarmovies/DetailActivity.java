@@ -46,6 +46,7 @@ public class DetailActivity extends AppCompatActivity
     private TextView mTrailer1;
     private TextView mTrailer2;
     private TextView mTrailer3;
+    private TextView mMovieReview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -225,6 +226,22 @@ public class DetailActivity extends AppCompatActivity
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "JSON Exception for Youtube Key: " + e.getMessage());
+            }
+
+            try {
+                final URL getReviewUrl = ParseJsonDataUtils.getMovieReviewsFromJson(jsonResults[1]);
+                //Log.d(TAG, "Movie Review URL: " + getReviewUrl);
+                mMovieReview = findViewById(R.id.movie_review);
+                mMovieReview.setOnClickListener(new View.OnClickListener() {
+                    Uri parsedUrl = Uri.parse(getReviewUrl.toString());
+                    Intent movieReviewIntent = new Intent(Intent.ACTION_VIEW, parsedUrl);
+                    @Override
+                    public void onClick(View v) {
+                        startActivity(movieReviewIntent);
+                    }
+                });
+            } catch (JSONException e) {
+                Log.e(TAG, "JSONException for Movie Review: " + e.getMessage());
             }
         } else {
             Log.e(TAG, "The json results of movie and reviews are NULL");

@@ -9,6 +9,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -120,7 +122,7 @@ public final class ParseJsonDataUtils {
     }
 
     // For Stage 2: Trailers, Reviews, and Favorites
-    public static String getMovieReviewsFromJson(String movieReviewsJsonStr) throws JSONException {
+    public static URL getMovieReviewsFromJson(String movieReviewsJsonStr) throws JSONException {
 
         final String JSON_RESULTS = "results";
         final String JSON_REVIEW_URL = "url";
@@ -153,6 +155,15 @@ public final class ParseJsonDataUtils {
         JSONObject theReviewUrl = movieDataArray.optJSONObject(0);
         reviewUrl = theReviewUrl.optString(JSON_REVIEW_URL);
 
-        return reviewUrl;
+        URL getReviewUrl = null;
+
+        try {
+            getReviewUrl = new URL(reviewUrl);
+        } catch (MalformedURLException e) {
+            Log.e(TAG, "Failed to get a URL for a movie review");
+        }
+
+
+        return getReviewUrl;
     }
 }
