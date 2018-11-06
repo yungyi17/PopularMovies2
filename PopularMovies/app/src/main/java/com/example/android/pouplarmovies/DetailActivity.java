@@ -15,6 +15,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.android.pouplarmovies.data.AppDatabase;
+import com.example.android.pouplarmovies.data.FavoriteEntry;
 import com.example.android.pouplarmovies.utilities.NetworkUtils;
 import com.example.android.pouplarmovies.utilities.ParseJsonDataUtils;
 import com.squareup.picasso.Picasso;
@@ -30,7 +32,6 @@ public class DetailActivity extends AppCompatActivity
 
     private static final String TAG = DetailActivity.class.getSimpleName();
     private static final int MOVIE_LOADER_ID = 33377; // For Stage 2
-    private String mMovieId; // For Stage 2
     // Store json result data for youtube trailers and reviews of movies
     private String[] mVideoAndReviewHolder = new String[2];
 
@@ -50,6 +51,16 @@ public class DetailActivity extends AppCompatActivity
     private TextView mTrailer2;
     private TextView mTrailer3;
 
+    private String mVoteAverage;
+    private String mTitle;
+    private String mPosterImage;
+    private String mSynopsis;
+    private String mReleaseDate;
+    private String mMovieId;
+
+    // Create database member variable
+    private AppDatabase mDb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +71,15 @@ public class DetailActivity extends AppCompatActivity
         mVoteAverageTextView = findViewById(R.id.vote_average_detail);
         mSynopsisTextView = findViewById(R.id.synopsis_detail);
         mReleaseDateTextView = findViewById(R.id.release_date_detail);
+
+        displayMovieInfo();
+
+        // Initialize database member variable
+        mDb = AppDatabase.getInstance(getApplicationContext());
+
+        // Get movie id from intent
+        mMovieId = getIntent().getStringExtra("bundleMovieId");
+
         // For stage 2 - movie favorite
         mFavoriteOff = findViewById(R.id.favorite_is_off);
         mFavoriteOn = findViewById(R.id.favorite_is_on);
@@ -70,11 +90,15 @@ public class DetailActivity extends AppCompatActivity
                 public void onClick(View v) {
                     mFavoriteOff.setVisibility(View.GONE);
                     mFavoriteOn.setVisibility(View.VISIBLE);
+
+                    // Movie favorite variable for the insert
+                    FavoriteEntry favoriteEntry = new FavoriteEntry(mTitle,
+                            mSynopsis, mVoteAverage, mPosterImage, mReleaseDate, mMovieId);
+                    // The favoriteDao in the AppDatabase variable to insert the favoriteEntry
+                    mDb.favoriteDao().insertFavorite(favoriteEntry);
                 }
             });
         }
-
-        displayMovieInfo();
 
         // getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         android.support.v4.app.LoaderManager
@@ -82,11 +106,11 @@ public class DetailActivity extends AppCompatActivity
     }
 
     private void displayMovieInfo() {
-        String mVoteAverage = getIntent().getStringExtra("bundleVoteAverage");
-        String mTitle = getIntent().getStringExtra("bundleMovieTitle");
-        String mPosterImage = getIntent().getStringExtra("bundlePosterImage");
-        String mSynopsis = getIntent().getStringExtra("bundleMovieSynopsis");
-        String mReleaseDate = getIntent().getStringExtra("bundleReleaseDate");
+        mVoteAverage = getIntent().getStringExtra("bundleVoteAverage");
+        mTitle = getIntent().getStringExtra("bundleMovieTitle");
+        mPosterImage = getIntent().getStringExtra("bundlePosterImage");
+        mSynopsis = getIntent().getStringExtra("bundleMovieSynopsis");
+        mReleaseDate = getIntent().getStringExtra("bundleReleaseDate");
 
         Picasso.with(this).load("http://image.tmdb.org/t/p/w185/" + mPosterImage).into(mPosterImageView);
         mMovieTitleTextView.setText(mTitle);
