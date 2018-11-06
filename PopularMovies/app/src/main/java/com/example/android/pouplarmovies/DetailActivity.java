@@ -38,6 +38,9 @@ public class DetailActivity extends AppCompatActivity
     private ImageView mTrailerIcon1;
     private ImageView mTrailerIcon2;
     private ImageView mTrailerIcon3;
+    // For stage 2 - movie favorite
+    private ImageView mFavoriteOff;
+    private ImageView mFavoriteOn;
 
     private TextView mMovieTitleTextView;
     private TextView mVoteAverageTextView;
@@ -46,7 +49,6 @@ public class DetailActivity extends AppCompatActivity
     private TextView mTrailer1;
     private TextView mTrailer2;
     private TextView mTrailer3;
-    private TextView mMovieReview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +60,19 @@ public class DetailActivity extends AppCompatActivity
         mVoteAverageTextView = findViewById(R.id.vote_average_detail);
         mSynopsisTextView = findViewById(R.id.synopsis_detail);
         mReleaseDateTextView = findViewById(R.id.release_date_detail);
+        // For stage 2 - movie favorite
+        mFavoriteOff = findViewById(R.id.favorite_is_off);
+        mFavoriteOn = findViewById(R.id.favorite_is_on);
+
+        if (mFavoriteOff.getVisibility() == View.VISIBLE) {
+            mFavoriteOff.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mFavoriteOff.setVisibility(View.GONE);
+                    mFavoriteOn.setVisibility(View.VISIBLE);
+                }
+            });
+        }
 
         displayMovieInfo();
 
@@ -230,16 +245,27 @@ public class DetailActivity extends AppCompatActivity
 
             try {
                 final URL getReviewUrl = ParseJsonDataUtils.getMovieReviewsFromJson(jsonResults[1]);
-                //Log.d(TAG, "Movie Review URL: " + getReviewUrl);
-                mMovieReview = findViewById(R.id.movie_review);
-                mMovieReview.setOnClickListener(new View.OnClickListener() {
-                    Uri parsedUrl = Uri.parse(getReviewUrl.toString());
-                    Intent movieReviewIntent = new Intent(Intent.ACTION_VIEW, parsedUrl);
-                    @Override
-                    public void onClick(View v) {
-                        startActivity(movieReviewIntent);
-                    }
-                });
+
+                // The url for a movie url is null
+                if (getReviewUrl == null) {
+                    ImageView mMovieReviewIcon = findViewById(R.id.movie_review_icon);
+                    mMovieReviewIcon.setVisibility(View.GONE);
+
+                    TextView mMovieReview = findViewById(R.id.movie_review);
+                    mMovieReview.setText(R.string.no_movie_reviews);
+                } else {
+                    //Log.d(TAG, "Movie Review URL: " + getReviewUrl);
+                    TextView mMovieReview = findViewById(R.id.movie_review);
+                    mMovieReview.setOnClickListener(new View.OnClickListener() {
+                        Uri parsedUrl = Uri.parse(getReviewUrl.toString());
+                        Intent movieReviewIntent = new Intent(Intent.ACTION_VIEW, parsedUrl);
+
+                        @Override
+                        public void onClick(View v) {
+                            startActivity(movieReviewIntent);
+                        }
+                    });
+                }
             } catch (JSONException e) {
                 Log.e(TAG, "JSONException for Movie Review: " + e.getMessage());
             }

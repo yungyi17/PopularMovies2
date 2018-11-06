@@ -50,6 +50,28 @@
                         style="@style/Base.TextAppearance.AppCompat.Headline"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
+
+                    <!-- Favorite Button -->
+                    <FrameLayout
+                        android:layout_margin="17dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
+
+                        <ImageView
+                            android:id="@+id/favorite_is_off"
+                            android:visibility="visible"
+                            android:contentDescription="@string/favorite_off_content_description"
+                            android:src="@android:drawable/btn_star_big_off"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <ImageView
+                            android:id="@+id/favorite_is_on"
+                            android:src="@android:drawable/btn_star_big_on"
+                            android:visibility="gone"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </FrameLayout>
                 </LinearLayout>
             </LinearLayout>
         </FrameLayout>
@@ -155,6 +177,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <ImageView
+                android:id="@+id/movie_review_icon"
                 android:src="@android:drawable/checkbox_on_background"
                 android:layout_marginLeft="7dp"
                 android:layout_marginTop="11dp"

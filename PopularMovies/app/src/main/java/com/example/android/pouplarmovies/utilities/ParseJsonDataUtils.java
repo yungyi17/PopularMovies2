@@ -153,6 +153,10 @@ public final class ParseJsonDataUtils {
         JSONArray movieDataArray = movieJson.optJSONArray(JSON_RESULTS);
 
         JSONObject theReviewUrl = movieDataArray.optJSONObject(0);
+        if (theReviewUrl == null) {
+            return null;
+        }
+
         reviewUrl = theReviewUrl.optString(JSON_REVIEW_URL);
 
         URL getReviewUrl = null;
