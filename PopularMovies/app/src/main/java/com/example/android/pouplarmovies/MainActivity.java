@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity
         parameterPath = sharedPreferences.getString(getString(R.string.pref_popular_key),
                 getString(R.string.pref_popular_value));
 
+        Log.d(TAG, "Path Parameter in onCreate: " + parameterPath);
         PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
         // getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         android.support.v4.app.LoaderManager
@@ -58,7 +59,7 @@ public class MainActivity extends AppCompatActivity
             protected void onStartLoading() {
                 super.onStartLoading();
                 if (movieData != null) {
-                   deliverResult(movieData);
+                    deliverResult(movieData);
                 } else {
                     forceLoad();
                 }
@@ -67,22 +68,28 @@ public class MainActivity extends AppCompatActivity
             @Nullable
             @Override
             public String loadInBackground() {
-                Log.d(TAG, "Path Parameter: " + parameterPath);
-                URL getUrl = NetworkUtils.buildUrl(parameterPath);
-                String getJsonData;
+                Log.d(TAG, "Path Parameter in loadInBackground: " + parameterPath);
+                
+                if (parameterPath.equals("favorite")) {
+                    return null;
+                } else {
+                    URL getUrl = NetworkUtils.buildUrl(parameterPath);
+                    String getJsonData;
 
-                try {
-                    Log.d(TAG, "getURL: " + getUrl);
-                    getJsonData = NetworkUtils.getResponseFromHttpUrl(getUrl);
-                    ParseJsonDataUtils.getMovieStringsFromJson(getJsonData);
-                } catch (JSONException e) {
-                    Log.e(TAG, "JSONException: " + e.getMessage());
-                    return null;
-                } catch (IOException e) {
-                    Log.e(TAG, "IO Exception: " + e.getMessage());
-                    return null;
+                    try {
+                        Log.d(TAG, "getURL: " + getUrl);
+                        getJsonData = NetworkUtils.getResponseFromHttpUrl(getUrl);
+                        ParseJsonDataUtils.getMovieStringsFromJson(getJsonData);
+
+                        return parameterPath;
+                    } catch (JSONException e) {
+                        Log.e(TAG, "JSONException: " + e.getMessage());
+                        return null;
+                    } catch (IOException e) {
+                        Log.e(TAG, "IO Exception: " + e.getMessage());
+                        return null;
+                    }
                 }
-                return null;
             }
 
             @Override
@@ -95,8 +102,15 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(@NonNull Loader<String> loader, String s) {
-        Intent intent = new Intent(this, MovieActivity.class);
-        startActivity(intent);
+        if (s != null) {
+            Intent intent = new Intent(this, MovieActivity.class);
+            startActivity(intent);
+        } else {
+            if (parameterPath.equals("favorite")) {
+                Intent favoriteIntent = new Intent(this, FavoriteActivity.class);
+                startActivity(favoriteIntent);
+            }
+        }
     }
 
     @Override
