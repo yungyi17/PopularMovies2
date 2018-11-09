@@ -12,7 +12,7 @@ import java.util.List;
 @Dao
 public interface FavoriteDao {
 
-    @Query("SELECT * FROM favorites ORDER BY title")
+    @Query("SELECT * FROM favorites ORDER BY id DESC")
     List<FavoriteEntry> loadAllFavorites();
 
     @Insert
@@ -23,4 +23,13 @@ public interface FavoriteDao {
 
     @Delete
     void deleteFavorite(FavoriteEntry favoriteEntry);
+
+    @Query("DELETE FROM favorites WHERE movie_id = :movieIdForDeletion")
+    void deleteFavoriteByMovieId(String movieIdForDeletion);
+
+    @Query("SELECT * FROM favorites WHERE id = :id")
+    FavoriteEntry loadFavoriteById(int id);
+
+    @Query("SELECT * FROM favorites WHERE movie_id = :movieId")
+    FavoriteEntry loadFavoriteByMovieId(String movieId);
 }

@@ -58,17 +58,9 @@
                         android:layout_height="wrap_content">
 
                         <ImageView
-                            android:id="@+id/favorite_is_off"
-                            android:visibility="visible"
+                            android:id="@+id/favorite_icon"
                             android:contentDescription="@string/favorite_off_content_description"
                             android:src="@android:drawable/btn_star_big_off"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-
-                        <ImageView
-                            android:id="@+id/favorite_is_on"
-                            android:src="@android:drawable/btn_star_big_on"
-                            android:visibility="gone"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content" />
                     </FrameLayout>

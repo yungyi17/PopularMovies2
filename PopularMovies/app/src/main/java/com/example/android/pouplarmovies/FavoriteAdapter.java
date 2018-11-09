@@ -3,6 +3,7 @@ package com.example.android.pouplarmovies;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,19 @@ import java.util.List;
 
 public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.FavoriteViewHolder> {
 
+    private static final String TAG = FavoriteAdapter.class.getSimpleName();
+
+    final private ItemClickListener mItemClickListener;
+
     private List<FavoriteEntry> mFavoriteEntries;
     private Context mContext;
 
-    public FavoriteAdapter(Context context) {
+    public interface ItemClickListener {
+        void onItemClickListener(String movieId);
+    }
+
+    public FavoriteAdapter(Context context, ItemClickListener listener) {
+        mItemClickListener = listener;
         mContext = context;
     }
 
@@ -47,12 +57,21 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         return mFavoriteEntries.size();
     }
 
-    public class FavoriteViewHolder extends RecyclerView.ViewHolder {
+    public class FavoriteViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final ImageView imageView;
 
         public FavoriteViewHolder(View itemView) {
             super(itemView);
             imageView = itemView.findViewById(R.id.favorite_list_image_view);
+            imageView.setAdjustViewBounds(true);
+            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            String movieId = mFavoriteEntries.get(getAdapterPosition()).getMovieId();
+            mItemClickListener.onItemClickListener(movieId);
         }
     }
 

@@ -4,14 +4,20 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.GridLayout;
 
 import com.example.android.pouplarmovies.data.AppDatabase;
+import com.example.android.pouplarmovies.data.FavoriteEntry;
 
-public class FavoriteActivity extends AppCompatActivity {
+import java.util.List;
+
+public class FavoriteActivity extends AppCompatActivity
+        implements FavoriteAdapter.ItemClickListener {
 
     private RecyclerView mRecyclerView;
     private FavoriteAdapter mAdapter;
@@ -22,13 +28,14 @@ public class FavoriteActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 2);
+        GridLayoutManager layoutManager = new GridLayoutManager(this,
+                2, LinearLayoutManager.VERTICAL, false);
 
         mRecyclerView = findViewById(R.id.favorite_recycler_view);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
 
-        mAdapter = new FavoriteAdapter(this);
+        mAdapter = new FavoriteAdapter(this, this);
         mRecyclerView.setAdapter(mAdapter);
 
         mDb = AppDatabase.getInstance(getApplicationContext());
@@ -55,6 +62,22 @@ public class FavoriteActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mAdapter.setFavorites(mDb.favoriteDao().loadAllFavorites());
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                final List<FavoriteEntry> favoriteEntries = mDb.favoriteDao().loadAllFavorites();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mAdapter.setFavorites(favoriteEntries);
+                    }
+                });
+            }
+        });
+    }
+
+    @Override
+    public void onItemClickListener(String movieId) {
+
     }
 }

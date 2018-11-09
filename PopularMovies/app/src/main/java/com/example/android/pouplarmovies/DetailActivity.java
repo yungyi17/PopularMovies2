@@ -30,7 +30,9 @@ import java.util.List;
 public class DetailActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<String[]> {
 
+    // Constant for default task id to be used when not in update mode
     private static final String TAG = DetailActivity.class.getSimpleName();
+
     private static final int MOVIE_LOADER_ID = 33377; // For Stage 2
     // Store json result data for youtube trailers and reviews of movies
     private String[] mVideoAndReviewHolder = new String[2];
@@ -40,8 +42,7 @@ public class DetailActivity extends AppCompatActivity
     private ImageView mTrailerIcon2;
     private ImageView mTrailerIcon3;
     // For stage 2 - movie favorite
-    private ImageView mFavoriteOff;
-    private ImageView mFavoriteOn;
+    private ImageView mFavoriteIcon;
 
     private TextView mMovieTitleTextView;
     private TextView mVoteAverageTextView;
@@ -60,6 +61,8 @@ public class DetailActivity extends AppCompatActivity
 
     // Create database member variable
     private AppDatabase mDb;
+    // True if the movie is in DB, false if the movie is NOT in DB
+    private boolean mFavoriteExistInDB;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,24 +81,30 @@ public class DetailActivity extends AppCompatActivity
         mDb = AppDatabase.getInstance(getApplicationContext());
 
         // Get movie id from intent
-        mMovieId = getIntent().getStringExtra("bundleMovieId");
+        // mMovieId = getIntent().getStringExtra("bundleMovieId");
 
         // For stage 2 - movie favorite
-        mFavoriteOff = findViewById(R.id.favorite_is_off);
-        mFavoriteOn = findViewById(R.id.favorite_is_on);
+        mFavoriteIcon = findViewById(R.id.favorite_icon);
 
-        if (mFavoriteOff.getVisibility() == View.VISIBLE) {
-            mFavoriteOff.setOnClickListener(new View.OnClickListener() {
+        /*
+         * Using the movie id, add a movie info into DB or delete movie info from DB
+         */
+        Intent intent = getIntent();
+        mMovieId = intent.getStringExtra("bundleMovieId");
+        if (!(mMovieId).equals("")) {
+            AppExecutors.getInstance().diskIO().execute(new Runnable() {
                 @Override
-                public void onClick(View v) {
-                    mFavoriteOff.setVisibility(View.GONE);
-                    mFavoriteOn.setVisibility(View.VISIBLE);
-
-                    // Movie favorite variable for the insert
-                    FavoriteEntry favoriteEntry = new FavoriteEntry(mTitle,
-                            mSynopsis, mVoteAverage, mPosterImage, mReleaseDate, mMovieId);
-                    // The favoriteDao in the AppDatabase variable to insert the favoriteEntry
-                    mDb.favoriteDao().insertFavorite(favoriteEntry);
+                public void run() {
+                    // Use the loadFavoriteByMovieId method to retrieve the movie id
+                    // mMovieId and assign its value to a final FavoriteEntry variable
+                    final FavoriteEntry favoriteEntry = mDb.favoriteDao().loadFavoriteByMovieId(mMovieId);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkFavoriteData(favoriteEntry);
+                            processFavoriteData();
+                        }
+                    });
                 }
             });
         }
@@ -103,6 +112,46 @@ public class DetailActivity extends AppCompatActivity
         // getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         android.support.v4.app.LoaderManager
                 .getInstance(this).initLoader(MOVIE_LOADER_ID, null, this);
+    }
+
+    private void checkFavoriteData(FavoriteEntry favoriteEntry) {
+        // Log.d(TAG, "Favorite Entry in Detail Activity: " + favoriteEntry);
+        if (favoriteEntry == null) {
+            mFavoriteExistInDB = false;
+            return;
+        }
+        mFavoriteExistInDB = true;
+    }
+
+    private void processFavoriteData() {
+        if (mFavoriteExistInDB) {
+            mFavoriteIcon.setImageResource(android.R.drawable.btn_star_big_on);
+        } else {
+            mFavoriteIcon.setImageResource(android.R.drawable.btn_star_big_off);
+        }
+
+        mFavoriteIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onSaveOrDeleteIconClicked();
+            }
+        });
+    }
+
+    private void onSaveOrDeleteIconClicked() {
+        final FavoriteEntry favoriteEntry = new FavoriteEntry(mTitle,
+                mSynopsis, mVoteAverage, mPosterImage, mReleaseDate, mMovieId);
+        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                if (mFavoriteExistInDB) {
+                    mDb.favoriteDao().deleteFavoriteByMovieId(mMovieId);
+                } else {
+                    mDb.favoriteDao().insertFavorite(favoriteEntry);
+                }
+                finish();
+            }
+        });
     }
 
     private void displayMovieInfo() {

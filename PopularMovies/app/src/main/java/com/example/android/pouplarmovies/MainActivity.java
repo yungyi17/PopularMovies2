@@ -39,8 +39,9 @@ public class MainActivity extends AppCompatActivity
         parameterPath = sharedPreferences.getString(getString(R.string.pref_popular_key),
                 getString(R.string.pref_popular_value));
 
-        Log.d(TAG, "Path Parameter in onCreate: " + parameterPath);
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+        // Log.d(TAG, "Path Parameter in onCreate: " + parameterPath);
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
         // getSupportLoaderManager().initLoader(MOVIE_LOADER_ID, null, this);
         android.support.v4.app.LoaderManager
                 .getInstance(this).initLoader(MOVIE_LOADER_ID, null, this);
@@ -68,8 +69,7 @@ public class MainActivity extends AppCompatActivity
             @Nullable
             @Override
             public String loadInBackground() {
-                Log.d(TAG, "Path Parameter in loadInBackground: " + parameterPath);
-                
+                // if favorite, return null
                 if (parameterPath.equals("favorite")) {
                     return null;
                 } else {
@@ -81,6 +81,7 @@ public class MainActivity extends AppCompatActivity
                         getJsonData = NetworkUtils.getResponseFromHttpUrl(getUrl);
                         ParseJsonDataUtils.getMovieStringsFromJson(getJsonData);
 
+                        // Just return any string
                         return parameterPath;
                     } catch (JSONException e) {
                         Log.e(TAG, "JSONException: " + e.getMessage());
@@ -102,6 +103,9 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onLoadFinished(@NonNull Loader<String> loader, String s) {
+        // If some string returns, display movie posters from json results.
+        // Otherwise (null returns), display favorite movie lists from database.
+
         if (s != null) {
             Intent intent = new Intent(this, MovieActivity.class);
             startActivity(intent);
