@@ -24,7 +24,8 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
     private Context mContext;
 
     public interface ItemClickListener {
-        void onItemClickListener(String movieId);
+        void onItemClickListener(String movieId, String vAvg, String mTitle,
+                                 String mPth, String mOverview, String rDate);
     }
 
     public FavoriteAdapter(Context context, ItemClickListener listener) {
@@ -71,7 +72,14 @@ public class FavoriteAdapter extends RecyclerView.Adapter<FavoriteAdapter.Favori
         @Override
         public void onClick(View v) {
             String movieId = mFavoriteEntries.get(getAdapterPosition()).getMovieId();
-            mItemClickListener.onItemClickListener(movieId);
+            String getVoteAvr = mFavoriteEntries.get(getAdapterPosition()).getVoterAverage();
+            String getMvTitle = mFavoriteEntries.get(getAdapterPosition()).getTitle();
+            String getMvImage = mFavoriteEntries.get(getAdapterPosition()).getPosterPath();
+            String getMvSynopsis = mFavoriteEntries.get(getAdapterPosition()).getOverview();
+            String getReleaseDt = mFavoriteEntries.get(getAdapterPosition()).getReleaseDate();
+
+            mItemClickListener.onItemClickListener(movieId, getVoteAvr, getMvTitle,
+                    getMvImage, getMvSynopsis, getReleaseDt);
         }
     }
 

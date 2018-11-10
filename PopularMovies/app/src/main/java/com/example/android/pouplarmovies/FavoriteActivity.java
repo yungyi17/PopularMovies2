@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +20,8 @@ import java.util.List;
 public class FavoriteActivity extends AppCompatActivity
         implements FavoriteAdapter.ItemClickListener {
 
+    private static final String TAG = FavoriteActivity.class.getSimpleName();
+
     private RecyclerView mRecyclerView;
     private FavoriteAdapter mAdapter;
     private AppDatabase mDb;
@@ -28,17 +31,18 @@ public class FavoriteActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
 
+        mDb = AppDatabase.getInstance(getApplicationContext());
+
+        mRecyclerView = findViewById(R.id.favorite_recycler_view);
+
         GridLayoutManager layoutManager = new GridLayoutManager(this,
                 2, LinearLayoutManager.VERTICAL, false);
 
-        mRecyclerView = findViewById(R.id.favorite_recycler_view);
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.setHasFixedSize(true);
 
         mAdapter = new FavoriteAdapter(this, this);
         mRecyclerView.setAdapter(mAdapter);
-
-        mDb = AppDatabase.getInstance(getApplicationContext());
     }
 
     @Override
@@ -62,6 +66,10 @@ public class FavoriteActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        retrieveFavorites();
+    }
+
+    private void retrieveFavorites() {
         AppExecutors.getInstance().diskIO().execute(new Runnable() {
             @Override
             public void run() {
@@ -77,7 +85,19 @@ public class FavoriteActivity extends AppCompatActivity
     }
 
     @Override
-    public void onItemClickListener(String movieId) {
+    public void onItemClickListener(String movieId, String vAvg, String mTitle,
+                                    String mPth, String mOverview, String rDate) {
+        Bundle mBundle = new Bundle();
+        mBundle.putString("bundleVoteAverage", vAvg);
+        mBundle.putString("bundleMovieTitle", mTitle);
+        mBundle.putString("bundlePosterImage", mPth);
+        mBundle.putString("bundleMovieSynopsis", mOverview);
+        mBundle.putString("bundleReleaseDate", rDate);
+        // For Stage 2: Trailers, Reviews, and Favorites
+        mBundle.putString("bundleMovieId", movieId);
 
+        Intent favoriteDetailIntent = new Intent(this, DetailActivity.class);
+        favoriteDetailIntent.putExtras(mBundle);
+        startActivity(favoriteDetailIntent);
     }
 }
