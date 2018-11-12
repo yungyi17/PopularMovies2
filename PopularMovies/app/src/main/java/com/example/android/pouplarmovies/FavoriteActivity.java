@@ -1,6 +1,9 @@
 package com.example.android.pouplarmovies;
 
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -10,7 +13,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.GridLayout;
 
 import com.example.android.pouplarmovies.data.AppDatabase;
 import com.example.android.pouplarmovies.data.FavoriteEntry;
@@ -24,17 +26,17 @@ public class FavoriteActivity extends AppCompatActivity
 
     private RecyclerView mRecyclerView;
     private FavoriteAdapter mAdapter;
-    private AppDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
 
-        mDb = AppDatabase.getInstance(getApplicationContext());
-
+        // Set the RecyclerView to its corresponding view
         mRecyclerView = findViewById(R.id.favorite_recycler_view);
 
+        // Set the layout for the RecyclerView to be a grid layout, which measures
+        // and positions items within a RecyclerView into a grid list
         GridLayoutManager layoutManager = new GridLayoutManager(this,
                 2, LinearLayoutManager.VERTICAL, false);
 
@@ -43,6 +45,8 @@ public class FavoriteActivity extends AppCompatActivity
 
         mAdapter = new FavoriteAdapter(this, this);
         mRecyclerView.setAdapter(mAdapter);
+
+        setUpViewModel();
     }
 
     @Override
@@ -63,23 +67,16 @@ public class FavoriteActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        retrieveFavorites();
-    }
+    private void setUpViewModel() {
+        // Initialize view model
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
 
-    private void retrieveFavorites() {
-        AppExecutors.getInstance().diskIO().execute(new Runnable() {
+        // Observe the live data in the view model
+        viewModel.getFavoriteEntries().observe(this, new Observer<List<FavoriteEntry>>() {
             @Override
-            public void run() {
-                final List<FavoriteEntry> favoriteEntries = mDb.favoriteDao().loadAllFavorites();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mAdapter.setFavorites(favoriteEntries);
-                    }
-                });
+            public void onChanged(@Nullable List<FavoriteEntry> favoriteEntries) {
+                Log.d(TAG, "Updating list of tasks from LiveData in ViewModel");
+                mAdapter.setFavorites(favoriteEntries);
             }
         });
     }

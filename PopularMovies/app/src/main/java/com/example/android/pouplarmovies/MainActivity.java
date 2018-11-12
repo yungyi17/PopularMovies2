@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Save sort criteria - Popular, high-rated, favorite
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         parameterPath = sharedPreferences.getString(getString(R.string.pref_popular_key),
                 getString(R.string.pref_popular_value));

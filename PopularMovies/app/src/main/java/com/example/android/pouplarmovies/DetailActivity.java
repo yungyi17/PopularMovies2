@@ -1,6 +1,8 @@
 package com.example.android.pouplarmovies;
 
 import android.annotation.SuppressLint;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -61,6 +63,7 @@ public class DetailActivity extends AppCompatActivity
 
     // Create database member variable
     private AppDatabase mDb;
+
     // True if the movie is in DB, false if the movie is NOT in DB
     private boolean mFavoriteExistInDB;
 
@@ -80,31 +83,26 @@ public class DetailActivity extends AppCompatActivity
         // Initialize database member variable
         mDb = AppDatabase.getInstance(getApplicationContext());
 
-        // Get movie id from intent
-        // mMovieId = getIntent().getStringExtra("bundleMovieId");
-
         // For stage 2 - movie favorite
         mFavoriteIcon = findViewById(R.id.favorite_icon);
 
-        /*
-         * Using the movie id, add a movie info into DB or delete movie info from DB
-         */
+        // Using the movie id, add a movie info into DB or delete movie info from DB
         Intent intent = getIntent();
         mMovieId = intent.getStringExtra("bundleMovieId");
         if (!(mMovieId).equals("")) {
-            AppExecutors.getInstance().diskIO().execute(new Runnable() {
+            FavoriteViewModelFactory factory = new FavoriteViewModelFactory(mDb, mMovieId);
+            // Declare a FavoriteViewModel variable and initialize it by calling
+            // ViewModelProviders.of for that use the factory created
+            final FavoriteViewModel viewModel = ViewModelProviders.of(this, factory)
+                    .get(FavoriteViewModel.class);
+
+            // Observe the LiveData object in the ViewModel. Use it also when removing the observer
+            viewModel.getFavoriteEntry().observe(this, new Observer<FavoriteEntry>() {
                 @Override
-                public void run() {
-                    // Use the loadFavoriteByMovieId method to retrieve the movie id
-                    // mMovieId and assign its value to a final FavoriteEntry variable
-                    final FavoriteEntry favoriteEntry = mDb.favoriteDao().loadFavoriteByMovieId(mMovieId);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            checkFavoriteData(favoriteEntry);
-                            processFavoriteData();
-                        }
-                    });
+                public void onChanged(@Nullable FavoriteEntry favoriteEntry) {
+                    viewModel.getFavoriteEntry().removeObserver(this);
+                    checkFavoriteData(favoriteEntry);
+                    processFavoriteData();
                 }
             });
         }
@@ -125,8 +123,10 @@ public class DetailActivity extends AppCompatActivity
 
     private void processFavoriteData() {
         if (mFavoriteExistInDB) {
+            // The star favorite image icon will be filled with yellow color
             mFavoriteIcon.setImageResource(android.R.drawable.btn_star_big_on);
         } else {
+            // The star favorite image icon will be filled with grey color
             mFavoriteIcon.setImageResource(android.R.drawable.btn_star_big_off);
         }
 
